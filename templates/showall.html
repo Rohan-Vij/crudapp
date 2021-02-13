@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Show All</title>
+</head>
+<body>
+    {% for item in data %}
+        Name: {{ item["name"] }} <br>
+        Artist: {{ item["artist"] }} <br>
+        Type: {{ item["type"] }} <br>
+        <img src='data:;base64,{{ item["image_data"] }}' style="width: 100px;"> <br>
+    {% endfor %}
+</body>
+</html>
+
