@@ -1,7 +1,7 @@
 # mongo.py
 
 # Web handler (Flask) import
-from flask import Flask, jsonify, request, render_template, send_file
+from flask import Flask, jsonify, request, render_template, send_file, redirect, url_for
 
 # Database (MongoDB) imports
 from pymongo import MongoClient
@@ -28,23 +28,14 @@ def get_art():
     for s in collection.find():
         b = gs.get(s["image"]).read()
         byte_data = b64encode(b).decode("utf-8")
-        output.append({'name': s['name'], 'artist': s['artist'], 'type': s['type'], 'image': str(byte_data)[:20] + "...", "id": str(s["image"])})
+        output.append({'_id': str(s["_id"]), 'name': s['name'], 'artist': s['artist'], 'type': s['type'], 'image_data': str(byte_data)[:20] + "...", "image_id": str(s["image"])})
     return jsonify({'result': output})
 
-@app.route('/art/view', methods=['GET'])
-def view_art():
-    output = []
-    for s in collection.find():
-        read = gs.get(s["image"]).read()
-        byte_data = b64encode(read).decode("utf-8")
-
-        output.append({'name': s['name'], 'artist': s['artist'], 'type': s['type'], 'image_data': byte_data})
-    return render_template("showall.html", data=output)    
 
 @app.route('/art/<key>/<value>', methods=['GET'])
 def search(key, value):
     if db.art.count_documents({key: value}, limit = 1) != 0:    
-        output = [{item: str(data[item]) for item in data.keys()} for data in collection.find({key: value}, {"_id": 0})]
+        output = [{item: str(data[item]) for item in data.keys()} for data in collection.find({key: value})]
         return jsonify({'result': output})
     else:
         return jsonify({'result': "nothing found"})
@@ -55,7 +46,7 @@ def data(id):
     for s in collection.find({"_id": ObjectId(id)}):
         b = gs.get(s["image"]).read()
         byte_data = b64encode(b).decode("utf-8")
-        output.append({'name': s['name'], 'artist': s['artist'], 'type': s['type'], 'image': str(byte_data)[:20] + "...", "id": str(s["image"])})
+        output.append({'_id': str(s["_id"]), 'name': s['name'], 'artist': s['artist'], 'type': s['type'], 'image_data': str(byte_data)[:20] + "...", "image_id": str(s["image"])})
     return jsonify({'result': output})
 
 @app.route('/art/picture/<id>')
@@ -64,6 +55,15 @@ def picture(id):
 
     return send_file(io.BytesIO(picture), mimetype = 'image/jpeg', as_attachment = False, attachment_filename= f'{id}.jpg')
 
+@app.route('/art/view', methods=['GET'])
+def view_art():
+    output = []
+    for s in collection.find():
+        read = gs.get(s["image"]).read()
+        byte_data = b64encode(read).decode("utf-8")
+        output.append({'_id': str(s["_id"]), 'name': s['name'], 'artist': s['artist'], 'type': s['type'], 'image_data': byte_data, 'image_id': str(s["image"])})
+    
+    return render_template("showall.html", data=output)     
 
 @app.route('/art/insert', methods=["GET", "POST"])
 def insertToDatabase():
@@ -88,6 +88,18 @@ def insertToDatabase():
         return render_template("add.html")
     else:
         return render_template("add.html")   
+
+@app.route('/art/view/delete', methods=["POST"])
+def deleteFromDatabase():
+    data = request.form["data"]
+    img = request.form["img"]
+
+
+    db.art.delete_one({'_id': ObjectId(data)})
+    db["gs.chunks"].delete_many({'files_id': ObjectId(img)})
+    db["gs.files"].delete_one({'_id': ObjectId(img)})
+
+    return redirect(url_for("view_art"))
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
