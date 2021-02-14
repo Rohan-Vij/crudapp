@@ -1,0 +1,13 @@
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    display: flex;
+    padding: 2em 20em;
+}
+
+form {
+    margin: auto;
+}
