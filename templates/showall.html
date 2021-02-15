@@ -4,10 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BmbxuPwQa2lc/FVzBcNJ7UAyJxM6wuqIj61tLrc4wSX0szH/Ev+nYRRuWlolflfl" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/js/bootstrap.bundle.min.js" integrity="sha384-b5kHyXgcpbZJO/tY9Ul7kGkf1S0CWuKcCD38l8YkeH8z8QjE0GmW1gYU5S9FOnJ0" crossorigin="anonymous"></script>
     <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
     <title>Show All</title>
 </head>
 <body>
+    <h1>Art</h1>
+    <hr>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#insertmodal">Insert a Piece of Art</button>
+    <hr>
     <table class="table">
     <thead>
         <th scope="col">Name</th>
@@ -19,24 +24,112 @@
     </thead>
     <tbody>
         {% for item in data %}
+            {% set _id = item['_id'] %}
+            {% set name = item["name"] %}
+            {% set artist = item["artist"] %}
+            {% set type = item["type"] %}
         <tr>
-            <td> {{ item["name"] }} </td>
-            <td> {{ item["artist"] }} </td>
-            <td> {{ item["type"] }} </td>
+            <td> {{ name }} </td>
+            <td> {{ artist }} </td>
+            <td> {{ type }} </td>
             <td> <img src='data:;base64,{{ item["image_data"] }}' style="width: 100px;"> </td>
             <td> <a href="http://192.168.1.115:5001/art/picture/{{ item['image_id'] }}" target="_blank">Full Resolution Image Link</a> </td>
             <td>
-                <form action="/art/view/delete" method="post"><input name="data" type="hidden" value="{{ item['_id'] }}"><input name="img" type="hidden" value="{{ item['image_id'] }}"><button class="btn btn-danger" type="submit"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                <form action="/art/view/delete" method="post"><input name="data" type="hidden" value="{{ _id }}"><input name="img" type="hidden" value="{{ item['image_id'] }}"><button class="btn btn-danger" type="submit"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
 <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
 <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
 </svg></button></form>
+
+                <button class="btn btn-warning" type="button" onclick="update('{{_id}}', '{{name}}', '{{artist}}', '{{type}}')" data-bs-toggle="modal" data-bs-target="#updatemodal"><svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pencil-square" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+    <path d="M15.502 1.94a.5.5 0 0 1 0 .706L14.459 3.69l-2-2L13.502.646a.5.5 0 0 1 .707 0l1.293 1.293zm-1.75 2.456l-2-2L4.939 9.21a.5.5 0 0 0-.121.196l-.805 2.414a.25.25 0 0 0 .316.316l2.414-.805a.5.5 0 0 0 .196-.12l6.813-6.814z"/>
+    <path fill-rule="evenodd" d="M1 13.5A1.5 1.5 0 0 0 2.5 15h11a1.5 1.5 0 0 0 1.5-1.5v-6a.5.5 0 0 0-1 0v6a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-11a.5.5 0 0 1 .5-.5H9a.5.5 0 0 0 0-1H2.5A1.5 1.5 0 0 0 1 2.5v11z"/>
+  </svg></button>
             </td>
         </tr>    
         {% endfor %}
     </tbody>
-
     </table>
-    
+    <!-- Update Modal -->
+    <div class="modal fade" id="updatemodal" tabindex="-1" aria-labelledby="updatemodal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Update a Record</h5>
+            </div>
+            <div class="modal-body">
+                <form action="/art/view/update" method="post" enctype="multipart/form-data">
+                    <input type="hidden" name="update_id" id="update_id">
+                    <div class="mb-3">
+                      <label for="update_name" class="form-label">Name:</label>
+                      <input type="text" class="form-control" id="update_name" name="update_name" placeholder="Mona Lisa">
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="update_artist" class="form-label">Artist:</label>
+                        <input type="text" class="form-control" id="update_artist" name="update_artist" placeholder="Leonardo da Vinci">
+                    </div>
+            
+                    <div class="mb-3">
+                        <label for="update_type" class="form-label">Type:</label>
+                        <input type="text" class="form-control" id="update_type" name="type" placeholder="Painting">
+                    </div>
+               
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Insert Modal -->
+    <div class="modal fade" id="insertmodal" tabindex="-1" aria-labelledby="insertmodal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title">Insert a Piece of Art</h5>
+            </div>
+            <div class="modal-body">
+                <form action="/art/view/insert" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">What is the name of your piece of art?</label>
+                        <input type="text" class="form-control" id="name" name="name" placeholder="Mona Lisa">
+                      </div>
+              
+                      <div class="mb-3">
+                          <label for="artist" class="form-label">Who created this piece of art?</label>
+                          <input type="text" class="form-control" id="artist" name="artist" placeholder="Leonardo da Vinci">
+                      </div>
+              
+                      <div class="mb-3">
+                          <label for="type" class="form-label">What type of art?</label>
+                          <input type="text" class="form-control" id="type" name="type" placeholder="Painting">
+                      </div>
+              
+                      <div class="mb-3">
+                          <label for="img" class="form-label">Upload your art (jpg or png):</label>
+                          <input type="file" class="form-control" id="img" name="img" accept="image/png, image/jpeg">
+                      </div>
+               
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-success">Insert</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+          </div>
+        </div>
+      </div>
+    </div>
+      
+    <script>
+        function update(id, name, artist, type) {
+            document.getElementById("update_id").value = id;
+            document.getElementById("update_name").value = name;
+            document.getElementById("update_artist").value = artist;
+            document.getElementById("update_type").value = type;
+        }
+    </script>
 </body>
 </html>
 
