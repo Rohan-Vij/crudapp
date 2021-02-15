@@ -76,7 +76,7 @@ def view():
     
     return render_template("showall.html", data=output)     
 
-@app.route('/art/insert', methods=["GET", "POST"])
+@app.route('/art/view/insert', methods=["GET", "POST"])
 def insert():
     """ Insert a piece of art (metadata and image) into the DB from a styled webpage. """
     if request.method == 'POST':
@@ -98,9 +98,9 @@ def insert():
         # with open(f"images/{name}.jpg", "wb")  as outfile:   
         #     outfile.write(data)
 
-        return render_template("add.html")
+        return redirect(url_for("view"))
     else:
-        return render_template("add.html")   
+        return redirect(url_for("view"))
 
 @app.route('/art/view/delete', methods=["POST"])
 def delete():
@@ -114,6 +114,21 @@ def delete():
     db["gs.files"].delete_one({'_id': ObjectId(img)})
 
     return redirect(url_for("view"))
+
+@app.route('/art/view/update', methods=["POST"])
+def updateDatabase():
+    update_id = request.form["update_id"]
+    update_name = request.form["update_name"]
+    update_artist = request.form["update_artist"]
+    update_type = request.form["update_type"]
+
+    myquery = {'_id': ObjectId(update_id)}
+    newvalues = {"$set": {"name": update_name, "artist": update_artist, "type": update_type}}
+
+    db.art.update_one(myquery, newvalues)
+
+    return redirect(url_for("view"))
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
