@@ -11,6 +11,10 @@
 <body>
     <h1>Art</h1>
     <hr>
+    <form action="/art/signout" method="post">
+        <input type="submit" class="btn btn-outline-dark btn-sm" value="Sign out"/>
+    </form>
+    <hr>
     <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#insertmodal">Insert a Piece of Art</button>
     <hr>
     <table class="table">
@@ -71,7 +75,7 @@
             
                     <div class="mb-3">
                         <label for="update_type" class="form-label">Type:</label>
-                        <input type="text" class="form-control" id="update_type" name="type" placeholder="Painting">
+                        <input type="text" class="form-control" id="update_type" name="update_type" placeholder="Painting">
                     </div>
                
                     <div class="modal-footer">
