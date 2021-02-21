@@ -1,0 +1,9 @@
+body {
+    display: flex;
+    padding: 2em 35.1em;
+    text-align: center;
+}
+
+.center {
+    margin: auto;
+} 
